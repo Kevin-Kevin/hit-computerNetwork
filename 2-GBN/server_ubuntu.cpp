@@ -21,7 +21,7 @@
 #include <arpa/inet.h>
 
 
-#define SERVER_PORT 10240
+#define SERVER_PORT 12340
 #define SERVER_IP "0.0.0.0"
 
 const int sendWindowSize = 10;
@@ -130,16 +130,16 @@ int main()
     {
       bool testRunning = true;
       int stage = 0;
+      int delayCount = 0;
       while (testRunning)
       {
-        int delayCount = 0;
         switch (stage)
         {
           case 0 :
             // 告诉 client 我准备好了
-            memset(buffer, 0, sizeof(buffer));
-            strcpy(buffer, "come on");
-            sendto(socketServer, buffer, strlen(buffer) + 1, 0, (sockaddr *)&addrClient, sizeof(sockaddr));
+  //          memset(buffer, 0, sizeof(buffer));
+//            strcpy(buffer, "come on");
+            sendto(socketServer, "come on", strlen("come on") + 1, 0, (sockaddr *)&addrClient, sizeof(sockaddr));
             stage = 1;
             break;
           case 1 :
@@ -154,8 +154,9 @@ int main()
               stage = 2;
             } else {
               delayCount++;
+              printf("delay = %d, buffer = %s\n", delayCount, buffer);
               if(delayCount > 2){
-                printf("error : time out , client 放你鸽子了");
+                printf("error : time out , client 放你鸽子了\n");
                 testRunning = false;
                 stage = 0;
               }
