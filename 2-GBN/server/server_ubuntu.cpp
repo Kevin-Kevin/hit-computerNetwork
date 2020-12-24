@@ -90,7 +90,7 @@ int main()
   // 读取文件到内存
   char toBeSendedData[1024 * 1024];
 
-  int fd = open("./test.txt", O_RDONLY);
+  int fd = open("./transmitFile.txt", O_RDONLY);
   int fileSize = lseek(fd, 0, SEEK_END);
   lseek(fd, 0, SEEK_SET);
   read(fd, toBeSendedData, fileSize);

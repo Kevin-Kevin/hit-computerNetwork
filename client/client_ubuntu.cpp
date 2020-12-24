@@ -17,8 +17,8 @@
 #include <arpa/inet.h>
 
 #define SERVER_PORT 12340
-#define SERVER_IP "59.110.61.243"
-//#define SERVER_IP "127.0.0.1"
+//#define SERVER_IP "59.110.61.243"
+#define SERVER_IP "127.0.0.1"
 
 const int lengthOfBuffer = 1100;
 const int seqSize = 20;
@@ -143,10 +143,10 @@ int main()
       case 3:
 
 
-        printf("transmit end\n");
+        printf("--------------transmit end--------------\n");
         printf("file buffer size = %d KB\n", strlen(receiveData)/1024);
         printf("total receive data = %d KB\n", totalRecvData);
-        int recvFileID = open("./test.txt", O_RDWR | O_CREAT | O_TRUNC, S_IRWXO);
+        int recvFileID = open("./transmitFile.txt", O_RDWR | O_CREAT | O_TRUNC, S_IRWXO);
         write(recvFileID, receiveData, strlen(receiveData));
         stage = 0;
         testRunning = false;
@@ -159,6 +159,6 @@ int main()
 // }
     }
 
-    system("pause");
+
     return 0;
 }
