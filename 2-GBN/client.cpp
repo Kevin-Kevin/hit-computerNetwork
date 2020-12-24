@@ -18,11 +18,12 @@
 
 #define SERVER_PORT 12340
 #define SERVER_IP "59.110.61.243"
+//#define SERVER_IP "127.0.0.1"
 
 const int lengthOfBuffer = 1100;
 const int seqSize = 20;
 int totalRecvData = 0;
-char receiveData[1024 * 1024*128];
+char receiveData[1024 * 1024*2];
 int getAck = -1;
 int sendAck = -1;
 int socketClient;
@@ -120,35 +121,42 @@ int main()
             
             printf("get ack from server ... %d\n", getAck );
             if(getAck == (sendAck + 1)){
-              printf("get ack = %d, send ack = %d\n", getAck, sendAck);
               // 获取 数据帧
-              char ackStr[10];
-              memcpy(ackStr, &sendAck, sizeof(int));
-              ackStr[5] = '\0';
-              memcpy(receiveData+(1024 * totalRecvData), buffer + 1, 1024);
+              memmove(receiveData+(1024 * totalRecvData), buffer + 1, 1024);
               totalRecvData++;
+              printf("total receive %d\n", totalRecvData);
               // 发送 ack
               sendAck++;
-              sendto(socketClient, ackStr, sizeof(int)+1, 0, (sockaddr *)&socketServerAddr, sizeof(sockaddr));
-              printf("send %d ack \n", sendAck);
+              char ackStr[10];
+              ackStr[0] = 'a';
+              memcpy(ackStr+1, &sendAck, 4);
+              ackStr[5] = '\0';
+              memcpy(&sendAck, ackStr + 1, 4);
+              sendto(socketClient, ackStr, sizeof(ackStr), 0, (sockaddr *)&socketServerAddr, sizeof(sockaddr));
+              printf("get ack = %d, send ack = %d\n", getAck, sendAck);
+            //  printf("frame = %s\n", buffer);
             }
           }
         }
       
         break;
       case 3:
-        printf("file = \n%s\n", receiveData);
-        int recvFileID = open("./recvFile.txt", O_RDWR | O_CREAT | O_TRUNC, S_IRWXO);
+
+
+        printf("transmit end\n");
+        printf("file buffer size = %d KB\n", strlen(receiveData)/1024);
+        printf("total receive data = %d KB\n", totalRecvData);
+        int recvFileID = open("./test.txt", O_RDWR | O_CREAT | O_TRUNC, S_IRWXO);
         write(recvFileID, receiveData, strlen(receiveData));
         stage = 0;
         testRunning = false;
         break;
       }
       runningTime++;
-if(runningTime>10){
-  stage = 3;
-  // break;
-}
+// if(runningTime>10){
+//   stage = 3;
+//   // break;
+// }
     }
 
     system("pause");

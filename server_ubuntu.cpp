@@ -142,6 +142,7 @@ int main()
       int stage = 0;
       int delayCount = 0;
       int waitTime = 0;
+      int retransimtCount = 0;
       int recvSize = -1;
       while (testRunning)
       {
@@ -183,7 +184,7 @@ int main()
 
         // 进入发送数据帧环节
         case 2:
-          printf("send file begin \n");
+          
           // 只要 curseq 还在窗口内,就一直发送数据
           if ((nextSeq - totalSendSeq) <= sendWindowSize && nextSeq <= totalPacket)
           {
@@ -196,50 +197,59 @@ int main()
             // buffer 后四位放 next sequence
             memcpy(buffer + 1025, (void *)&nextSeq, sizeof(int));
             // 发送给 client
-            sendto(socketServer, buffer, strlen(buffer) + 1, 0, (sockaddr *)&addrClient, sizeof(sockaddr));
+            sendto(socketServer, buffer, sizeof(buffer), 0, (sockaddr *)&addrClient, sizeof(sockaddr));
             printf("server send %d seq \n", nextSeq);
+           // printf("send frame = %s\n",buffer);
             nextSeq++;
           }
           // 从 client 接收 ack
-          int ackStr[10];
+          char ackStr[10];
 
-          recvSize = recvfrom(socketServer, ackStr, sizeof(int)+1, 0, (sockaddr *)&addrClient, &sizeOfClientAddr);
+          recvSize = recvfrom(socketServer, ackStr, sizeof(ackStr), 0, (sockaddr *)&addrClient, &sizeOfClientAddr);
           // 如果未收到 client 的 ack
           if (recvSize < 0)
           {
             waitTime++;
             // 如果超时未收到ack,重传
-            if (waitTime > 100)
+            if (waitTime > 1000)
             {
               printf("time out , retransmit\n");
               nextSeq = totalSendSeq + 1;
-              if (waitTime > 150)
-              {
-                stage = 3;
-                break;
-              }
+              waitTime = 0;
+              retransimtCount++;
+              printf("retransmit is %d\n",retransimtCount);
+                // if(retransimtCount>300){
+                //   printf("retransmit is over 300, go to stage 3\n");
+                //   stage = 3;
+                //   break;
+                // }
+              
             }
           }
           // 如果收到 ack
           else
           {
-            memcpy(&curAck, ackStr, sizeof(int));
-            printf("client send %d ack\n", curAck);
+            memcpy(&curAck, ackStr+1, 4);
+            printf("--->>>client send %d ack\n",curAck);
             totalSendSeq = curAck;
           }
           // 如果 ack 等于总的文件帧,进入结束阶段
           if (curAck == totalPacket)
           {
             stage = 3;
-            printf("transmision is going over...\n");
+            printf("transmision is going to end...\n");
           }
-          usleep(10);
+          usleep(1000);
           break;
 
         case 3:
+
           sendto(socketServer, "-quit", strlen("-quit") + 1, 0, (sockaddr *)&addrClient, sizeof(sockaddr));
+          
           stage = 0;
           testRunning = false;
+          printf("retransmit = %d\n", retransimtCount);
+          printf("---------------transmit end--------------\n");
           break;
         }
       }
@@ -247,7 +257,7 @@ int main()
     nextSeq = 0;
     curAck = 0;
     totalSendSeq = 0; // 已发送的数据
-    sleep(1);
+    usleep(1000);
 
   }
 
