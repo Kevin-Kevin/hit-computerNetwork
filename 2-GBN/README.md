@@ -1,0 +1,4 @@
+- ****_example 是指导书给的例子(win)
+- ****_test 是用于测试部分功能实现(linux)
+- ****_ubuntu 是真正的实现(linux)
+- transmitFile 是传输文件 , 从服务器到客户端
