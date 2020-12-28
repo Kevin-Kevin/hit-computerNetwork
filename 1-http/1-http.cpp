@@ -145,7 +145,7 @@ unsigned int __stdcall ProxyThread(LPVOID lpParameter)
     int length = sizeof(SOCKADDR_IN);
     int recvSize;
     int ret;
-
+ 
     HttpHeader *httpHeader = new HttpHeader();
 
     recvSize = recv(((ProxyParam *)lpParameter)->clientSocket, Buffer, MAXSIZE, 0);
