@@ -39,7 +39,6 @@ const int lengthOfBuffer = 1100;
 int socketServer;
 sockaddr_in socketServerAddr;
 
-
 sockaddr clientSocket;
 socklen_t clientSocketLength;
 
@@ -48,8 +47,7 @@ char buffer[lengthOfBuffer]; // 接收缓冲区
 
 bool InitSocket();
 int sendHtmlFile();
-void* mainThread(void* arg);
-
+void *mainThread(void *arg);
 
 int main()
 {
@@ -60,7 +58,7 @@ int main()
   // 创建主线程
   pthread_create(&tids[0], NULL, &mainThread, NULL);
   pthread_join(tids[0], NULL);
-  
+
   return 0;
 }
 
@@ -74,6 +72,8 @@ bool InitSocket()
     printf("创建 套接字失败\n");
     return false;
   }
+  int on = 1;
+  setsockopt(socketServer, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
   // //设置套接字为非阻塞模式
   // int flags = fcntl(socketServer, F_GETFL, 0);
   // fcntl(socketServer, F_SETFL, flags | O_NONBLOCK); //1：非阻塞，0：阻塞
@@ -95,58 +95,67 @@ bool InitSocket()
   return true;
 }
 // 主线程监听
-void* mainThread(void* arg){
+void *mainThread(void *arg)
+{
   // server socket init
   if (!InitSocket())
     printf("socket init failed !!! \n");
   else
     printf("socket init successed !!! \n");
 
-
-
   int waitTime = 0;
   int threadCount = -1;
-  char header[] = {" HTTP/1.1 200 OK\nConnection: close\nContent-Type: text/html\nContent-Length: %d\n\n"};
+  char header[] = {" HTTP/1.1 200 OK\nConnection: close\nContent-Type: text/html\n%d\n\n"};
   char notFound[] = {"HTTP/1.1 404 Not Found\n\n"};
   //代理服务器监听
   while (true)
   {
     printf("wait client ...%d\n", waitTime);
     int acceptSocket = accept(socketServer, &clientSocket, &clientSocketLength);
-    if(acceptSocket == -1){
+    printf("---------->> get a client connect\n");
+    if (acceptSocket == -1)
+    {
       printf(" accept error \n");
-    } else{
+    }
+    else
+    {
 
       int recvSize = recv(acceptSocket, buffer, sizeof(buffer), 0);
-      if(recvSize<0){
-
-      } else {
+      printf("recvsize\n");
+      if (recvSize < 0)
+      {
+        printf("recvSize < 0\n");
+      }
+      else
+      {
         printf("get a client connect\n");
         // 不是 get 方法, 发送 404
-        if(buffer[0] != 'G'){
-          printf("client not get \n");
-          send(acceptSocket, notFound, strlen(notFound), 0);
-          close(acceptSocket);
-          continue;
-        }
+        // if(buffer[0] != 'G'){
+        //   printf("client not get \n");
+        //   send(acceptSocket, notFound, strlen(notFound), 0);
+        //   close(acceptSocket);
+        //   continue;
+        // }
 
         // 获取浏览器要 get 的文件
         char *flieName;
         strtok(buffer, "/");
         flieName = strtok(NULL, " ");
+        strcat(flieName, "\0");
+
+        char readFileName[100] = {"/root/"};
+        strcat(readFileName, flieName);
+        printf("read file name = %s\n", readFileName);
+        // 读取文件到内存
+        int fd = open(readFileName, O_RDONLY);
         // 要获取的不是 homePage.html ,发送 404
-        if (strcmp(flieName, "homePage.html") != 0)
+        if (fd == -1)
         {
           printf("do not have this file\n");
           send(acceptSocket, notFound, strlen(notFound), 0);
           close(acceptSocket);
           continue;
         }
-        char readFileName[100] = {"/root/webServer/"};
-        strcat(readFileName, flieName);
-        printf("read file name = %s\n", readFileName);
-        // 读取文件到内存
-        int fd = open("/root/webServer/homePage.html", O_RDONLY);
         int fileSize = lseek(fd, 0, SEEK_END);
         lseek(fd, 0, SEEK_SET);
         read(fd, toBeSendedData, fileSize);
@@ -159,14 +168,16 @@ void* mainThread(void* arg){
         int res = 0;
         // 发送 header
         res = send(acceptSocket, header, strlen(header), 0);
-        if(res == -1){
+        if (res == -1)
+        {
           printf("send header error\n");
           continue;
         }
         printf("send header \n");
         // 发送 homePage.html
         res = send(acceptSocket, buffer, sizeof(buffer), 0);
-        if(res == -1){
+        if (res == -1)
+        {
           printf("send html error\n");
           continue;
         }
@@ -183,6 +194,7 @@ void* mainThread(void* arg){
 }
 
 // 发送 html 文件
-int  sendHtmlFile(){
-        return 0;
+int sendHtmlFile()
+{
+  return 0;
 }

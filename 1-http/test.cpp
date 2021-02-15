@@ -88,5 +88,3 @@ int main(){
     system("pause");
     return 0;
 }
-Host: api.vc.bilibili.com:443
-www.bilibili.com:443 HTTP/1.1
