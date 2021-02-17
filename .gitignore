@@ -1,0 +1,33 @@
+# ignore all #
+############## 
+*
+
+# not ignore gitignore#
+#################
+# not ignore dictionary#
+!*/
+!.gitignore
+# program language file#
+!*.cpp
+!*.c
+!*.class
+!*.sql
+
+# document # 
+!*.md
+!*.pdf
+!*.html
+
+
+
+# # OS generated files #
+# ######################
+# .DS_Store
+
+# # VS Code files #
+# #################
+# .vscode
+
+# # binary file #
+# ###############
+# .exe
