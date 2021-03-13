@@ -24,7 +24,7 @@ int stud_ip_recv(char* pBuffer, unsigned short length) {
 
  // --------------------------------- 分割线 ---------------------------------
     
-    // 这里有一个问题, 既先校验哪一个首部字段
+    // 这里有一个问题, 既先判断哪一个首部字段不和要求
     // 按我的理解应该是先校验 checksum, 如果首部出错, 一切免谈
 
 
@@ -33,8 +33,8 @@ int stud_ip_recv(char* pBuffer, unsigned short length) {
     // 这里的代码参考了 rfc 1071 中检验 checksum 的示例代码
     // 反码算术计算和
     unsigned long sum = 0;
-    // sum 取反后的数, 只去后 16 位, 是 short 不是 long
-    unsigned short checksum = 0;
+    // sum 取反后的数, 只取后 16 位, 是 short 不是 long
+    unsigned short short_sum = 0;
     // 首部字节长度, 需要 headLength * 4
     int count = headLength*4;
     // IP 数据报的起始地址, 方便取出一个 16 位的数
@@ -53,10 +53,10 @@ int stud_ip_recv(char* pBuffer, unsigned short length) {
     // 然后把 sum 的前 16 位加到后十六位上
     while (sum >> 16)
         sum = (sum & 0xffff) + (sum >> 16);
-    // sum 取反后取后十六位
-    checksum = ~sum;
+    // sum 取反, 然后取其后 16 位作为校验和
+    short_sum = ~sum;
     // 结果不为 0, 则代表
-    if (checksum != 0) {
+    if (short_sum != 0) {
         ip_DiscardPkt(pBuffer, stud_ip_test_checksum_error);
         return 1;
     }
@@ -109,32 +109,61 @@ int stud_ip_recv(char* pBuffer, unsigned short length) {
     0 : 成功发送 IP 分组 1 : 发送 IP 分组失败
 
 */
-int stud_ip_Upsend(char* pBuffer, unsigned short len, unsigned int srcAddr, unsigned int dstAddr, byte protocol, byte ttl){
+int stud_ip_Upsend(char* pBuffer, unsigned short len, unsigned int srcAddr, unsigned int dstAddr, byte protocol, byte ttl) {
     // 没有可变部分, length = len +20
-   
-    char* buffer    = (char*)malloc((len + 20) * sizeof(char));
-    for(int i =0;i<len+20;i++){
+    unsigned short length = len + 20;
+
+    char* buffer = (char*)malloc((length * sizeof(char));
+    for (int i = 0;i < length;i++) {
         buffer[i] = '0';
     }
-    // ipv4 , 首部长度为 20/4
+    // 版本 ipv4 
+    // 首部长度为 20/4
     buffer[0] = 0x45;
-    
-    // 区分服务跳过
-    
+
+    // x 区分服务
+
     // 总长度 len+20
-    unsigned short length = len + 20;
-    length = htons(length);
-    memcpy(buffer + 2, &length, 2);
-    
-    
-    // 标识
-    // 剩下的就不写了
-    // checksum 再算一遍就好了
-    // 目的地址源地址放入的时候记得转换成网络字节序
-    
+    unsigned short net_length = htons(length);
+    memcpy(buffer + 2, &net_length, 2);
 
+    // x 标识 
+    // x 标志 
+    // x 片偏移 
     
+    // 生存时间
+    buffer[8] = ttl;
+    
+    // 协议 9
+    buffer[9] = protocol;
+    
+    // 校验和放到最后面
+    
+    // 源地址 12 13 14 15
+    unsigned int net_srcIP = htonl(srcAddr);
+    memcpy(buffer + 12, &net_srcIP, 4);
+    
+    // 目的地址 16 17 18 19
+    unsigned int net_dstIP = htonl(dstAddr);
+    memcpy(buffer + 16, &net_dstIP, 4);
 
+    // 首部校验和 10,11
+    unsigned int sum = 0;
+    // 首部划分为 16 位的序列,依次相加, 直接跳过校验和
+    for (int i = 0;i < length;i = i + 2) {
+        if (i == 10) {
+            continue;
+        }
+        sum += ((unsigned int)buffer[i]) << 8 + (unsigned int)buffer[i + 1];
+    }
+    // 将溢出的到前 16 位的加到后 16 位
+    unsigned short short_sum = (unsigned short)(sum >> 16 + sum);
+    // 取反
+    short_sum = ~short_sum;
+    // 写入
+    memcpy(buffer, &short_sum, 2);
     
+    // 发送给下层协议
+    ip_SendtoLower(buffer, length);
 }
 
