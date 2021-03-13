@@ -1,11 +1,15 @@
-# ignore all #
-############## 
-*
+
+# # VS Code files #
+# #################
+*.vscode
+
+*.exe
+
 
 # not ignore gitignore#
 #################
 # not ignore dictionary#
-!*/
+
 !.gitignore
 # program language file#
 !*.cpp
@@ -22,11 +26,8 @@
 
 # # OS generated files #
 # ######################
-# .DS_Store
+.DS_Store
 
-# # VS Code files #
-# #################
-# .vscode
 
 # # binary file #
 # ###############
