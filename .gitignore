@@ -1,9 +1,6 @@
 
-# # VS Code files #
-# #################
-*.vscode
+*
 
-*.exe
 
 
 # not ignore gitignore#
@@ -12,8 +9,8 @@
 
 !.gitignore
 # program language file#
-!*.cpp
 !*.c
+!*.cpp
 !*.class
 !*.sql
 
@@ -32,3 +29,9 @@
 # # binary file #
 # ###############
 # .exe
+
+# # VS Code files #
+# #################
+*.vscode
+
+*.exe
