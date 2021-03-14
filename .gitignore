@@ -1,15 +1,9 @@
 
 *
-
-
-
-# not ignore gitignore#
-#################
-# not ignore dictionary#
-
-!.gitignore
-# program language file#
+!*/
 !*.c
+!.gitignore
+
 !*.cpp
 !*.class
 !*.sql
@@ -25,13 +19,6 @@
 # ######################
 .DS_Store
 
-
-# # binary file #
-# ###############
-# .exe
-
-# # VS Code files #
-# #################
 *.vscode
 
 *.exe
