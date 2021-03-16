@@ -4,10 +4,7 @@
 #include<stdlib.h>
 int main() {
     int a = 126;
-    for(int i=0;i<128;i++){
-        char c = i;
-        printf("%c ",c);
-            
-    }
+    char c = a;
+    printf("%d",c);
     return 0;
 }

@@ -5,6 +5,7 @@ void ip_DiscardPkt(char* pBuffer, int type);
 void printBuffer(char* buffer, int length);
 
 /*
+收到ip 分组检验后传给上层
 参数：
     pBuffer：指向接收缓冲区的指针，指向IPv4分组头部
     length：IPv4分组长度
@@ -12,7 +13,7 @@ void printBuffer(char* buffer, int length);
     0：成功接收IP分组并交给上层处理
     1：IP分组接收失败
 */
-/* int stud_ip_recv(char* pBuffer, unsigned short length) {
+int stud_ip_recv(char* pBuffer, unsigned short length) {
     // 检查接收到的IPv4分组头部的字段
     // 包括版本号（Version）、头部长度（IP  Head  length）、生存时间（Time  to  live）以及头校验和（Header checksum）字段
     // 对于出错的分组调用ip_DiscardPkt()丢弃，并说明错误类型。
@@ -95,9 +96,10 @@ void printBuffer(char* buffer, int length);
     // 调用ip_SendtoUp()接口函数，交给系统进行后续接收处理。
     ip_SendtoUp(pBuffer+headLength*4, length-headLength*4);
 }
- */
+
 
 /* 
+上层协议发送到网络层, 加上首部后发出
 参数:
     pBuffer:指向发送缓冲区的指针，指向 IPv4 上层协议数据头部
     len : IPv4 上层协议数据长度
